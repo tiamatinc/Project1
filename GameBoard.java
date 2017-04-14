@@ -248,6 +248,39 @@ public class GameBoard {
 	//// Moving the Player/Enemies /////////////////////////////////////////////
 
 	/**
+	 * This method checks if the player can move to whatever direction is passed into
+	 * @param direction.
+	 * @return true if valid, false if invalid.
+	 */
+	public boolean checkMove(char direction) {
+		Player player = getPlayer();
+		boolean valid = false;
+		int row = player.getRow();
+		int column = player.getColumn();
+
+		if (checkPlayerInRoom() && direction != 'u')
+			valid = false;
+
+		deleteFieldOfView();
+
+		switch (direction) {
+		case 'u':
+			valid = checkObstruction(row - 1, column, direction);
+			break;
+		case 'd':
+			valid = checkObstruction(row + 1, column, direction);
+			break;
+		case 'l':
+			valid = checkObstruction(row, column - 1, direction);
+			break;
+		case 'r':
+			valid = checkObstruction(row, column + 1, direction);
+			break;
+		}
+		return valid;
+	}
+	
+	/**
 	 * This method is in charge of moving the player based on the direction the user inputted in
 	 * the UI. Throughout the process of the method, it deletes the current field of view,
 	 * moves the player to its new space (if applicable) and creates the new field of view.
@@ -382,7 +415,7 @@ public class GameBoard {
 		int newRow = 0;
 		int newColumn = 0;
 		boolean valid = false;
-		char direction = 'd';
+		char direction = 's';
 
 		for (MapObjects[] m : grid) {
 			for (MapObjects o : m) {

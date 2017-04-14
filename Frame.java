@@ -15,7 +15,9 @@ public class Frame extends JPanel implements ActionListener, KeyListener
 	Scanner kb = new Scanner(System.in);
 	GameEngine ge = new GameEngine();
 	Random rng = new Random();
-	int playerCounter = 63;
+	char pendingDir = ' ';
+	char movingDir = ' ';
+	int playerCounter = 0;
 	int enemyCounter = 63;
 	Timer tm = new Timer(15, this);
 	
@@ -36,11 +38,11 @@ public class Frame extends JPanel implements ActionListener, KeyListener
 				int yPos = 64*y + 20;
 				if(ge.getType(y, x) == 'P') {
 					g.setColor(Color.PINK);
-					char direction = ge.getDirection(y, x);
-					if(direction == 'u') yPos += playerCounter;
-					if(direction == 'd') yPos -= playerCounter;
-					if(direction == 'l') xPos += playerCounter;
-					if(direction == 'r') xPos -= playerCounter;
+					if(movingDir == 'u') yPos -= playerCounter;
+					if(movingDir == 'd') yPos += playerCounter;
+					if(movingDir == 'l') xPos -= playerCounter;
+					if(movingDir == 'r') xPos += playerCounter;
+					
 				}
 				if(ge.getType(y, x) == 'E') {
 					g.setColor(Color.BLACK);
@@ -49,7 +51,7 @@ public class Frame extends JPanel implements ActionListener, KeyListener
 					if(direction == 'd') yPos -= enemyCounter;
 					if(direction == 'l') xPos += enemyCounter;
 					if(direction == 'r') xPos -= enemyCounter;
-					System.out.println(x + ", " + y);
+					//System.out.println(x + ", " + y);
 				}
 				if(ge.getType(y, x) == 'R') g.setColor(Color.YELLOW);
 				if(ge.getType(y, x) == 'A') g.setColor(Color.RED);
@@ -85,6 +87,17 @@ public class Frame extends JPanel implements ActionListener, KeyListener
 	public void actionPerformed(ActionEvent e) 
 	{
 		// Move Players
+		if(playerCounter == 0) {
+			if(ge.checkMove(pendingDir) != 's') {
+				movingDir = pendingDir;
+			}
+			else {
+				movingDir = 's';
+			}
+		} 
+		playerCounter++;
+		if(playerCounter == 63) playerCounter = 0;
+		if(playerCounter == 0) ge.movePlayer(movingDir);
 		
 		// Move Enemies
 		if(enemyCounter == 0) enemyCounter = 63;
@@ -94,11 +107,26 @@ public class Frame extends JPanel implements ActionListener, KeyListener
 		
 		repaint();
 		//kb.nextLine();
-		if(playerCounter != 0) playerCounter--;
 		enemyCounter--;
+		System.out.println("Counter: " + playerCounter);
+		System.out.println("Direct : " + movingDir);
 	}
 
-	public void keyTyped(KeyEvent e) {		
+	public void keyTyped(KeyEvent e) {
+		switch(e.getKeyChar()) {
+		case 'w':
+			pendingDir = 'u';
+			break;
+		case 'a':
+			pendingDir = 'l';
+			break;
+		case 's':
+			pendingDir = 'd';
+			break;
+		case 'd':
+			pendingDir = 'r';
+			break;
+		}
 	}
 
 	public void keyPressed(KeyEvent e) {

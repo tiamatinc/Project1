@@ -22,6 +22,11 @@ public class GameEngine {
 	private int enemiesAlive;
 	private GameBoard grid = new GameBoard();
 
+	public GameEngine() {
+		gameReset();
+		generateBoard();
+	}
+	
 	//// Generating Board /////////////////////////////////
 	
 	/**
@@ -135,6 +140,11 @@ public class GameEngine {
 		grid.disposeOfBodies();
 		enemiesAlive = grid.enemyCount();
 		return result;
+	}
+	
+	public char checkMove(char direction) {
+		if(grid.checkMove(direction)) return direction;
+		else return 's';
 	}
 
 	/**
@@ -316,6 +326,7 @@ public class GameEngine {
 	 */
 	public void checkDeath(Player player) {
 		boolean alive = grid.scanFor("Player");
+		//System.out.println(alive);
 		if (!alive) {
 			grid.moveEnemyFromSpawn();
 			player.setLives(player.getLives() - 1);
