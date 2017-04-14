@@ -259,9 +259,7 @@ public class GameBoard {
 		int column = player.getColumn();
 
 		if (checkPlayerInRoom() && direction != 'u')
-			valid = false;
-
-		deleteFieldOfView();
+			return false;
 
 		switch (direction) {
 		case 'u':
