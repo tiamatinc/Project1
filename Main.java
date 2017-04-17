@@ -9,7 +9,7 @@ public class Main {
 		Frame panel = new Frame();
 		JFrame jf = new JFrame();
 		jf.setTitle("Testing");
-		jf.setSize(900, 700);
+		jf.setSize(1000, 676);
 		jf.setResizable(false);
 		jf.setVisible(true);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
