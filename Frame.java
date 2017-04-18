@@ -4,7 +4,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -307,39 +309,16 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			}
 
 			repaint();
-			printBoard();
-			// kb.nextLine();
 			enemyCounter--;
-			// System.out.println(animDir);
-			// System.out.println("Counter: " + (playerCounter / 32) % 2);
-			// System.out.println("Direct : " + ge.getPlayer().getDirection());
 
 			if (ge.checkWin())
 				ge.generateBoard(ge.getPlayer().getLives());
 		}
 	}
 
-	private void printBoard() {
-		System.out.println("\n===========================");
-		for (int i = 0; i < 9; ++i) {
-			for (int j = 0; j < 9; ++j) {
-				if (!ge.checkExists(i, j))
-					System.out.print("[ ]");
-				else if (ge.isVisible(i, j))
-					System.out.print("[" + ge.getType(i, j) + "]");
-				else
-					System.out.print("[ ]");
-			}
-			System.out.println("");
-		}
-		System.out.println("===========================");
-		System.out.println("Lives: " + ge.getLives() + "   Bullets: " + ge.getBullets());
-		System.out.println("Level: " + ge.getLevel() + "   Enemies: " + ge.getEnemies());
-		System.out.println("===========================");
-	}
-
 	private boolean nextLevel() {
 		if (ge.checkWin()) {
+			infoBox = 1;
 			repaint();
 			pause = true;
 			int lives = ge.getLives();
@@ -385,6 +364,18 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			break;
 		case 5:
 			info = "Game save cancelled.";
+			break;
+		case 6:
+			// Error saving
+			break;
+		case 7:
+			// File loaded
+			break;
+		case 8:
+			// Invalid file
+			break;
+		case 9:
+			// Incorrect file load
 			break;
 		default:
 			info = "";
@@ -447,10 +438,42 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 				int status = pickSave.showSaveDialog(null);
 				if (status == JFileChooser.APPROVE_OPTION) {
 					String result = ge.saveFile(pickSave.getSelectedFile(), this);
+					if(result.equalsIgnoreCase("Your game is corrupted and could not be saved...")) {
+						infoBox = 6;
+					}
 					infoBox = 4;
 				}
 				if (status == JFileChooser.CANCEL_OPTION) {
 					infoBox = 5;
+				}
+			}
+			break;
+		case 'l':
+			if (pause) {
+				JFileChooser pickSave = new JFileChooser();
+				int status = pickSave.showOpenDialog(null);
+				if(status == JFileChooser.APPROVE_OPTION) {
+					try {
+						FileInputStream fis = new FileInputStream(pickSave.getSelectedFile());
+						ObjectInputStream ois = new ObjectInputStream(fis);
+						Data ld = (Data) ois.readObject();
+						this.pendingDir = ld.getPendingDir();
+						this.movingDir = ld.getMovingDir();
+						this.animDir = ld.getAnimDir();
+						this.found1 = ld.isFound1();
+						this.found2 = ld.isFound2();
+						this.infoBox = ld.getInfoBox();
+						this.playerCounter = ld.getPlayerCounter();
+						this.enemyCounter = ld.getEnemyCounter();
+						
+						ge.loadFile(pickSave.getSelectedFile());
+						repaint();
+						fis.close();
+					} catch (IOException ex) {
+						infoBox = 8;
+					} catch (ClassNotFoundException ex) {
+						infoBox = 9;
+					}
 				}
 			}
 			break;
@@ -462,4 +485,37 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 
 	public void keyReleased(KeyEvent e) {
 	}
+	
+	public char getPendingDir() {
+		return pendingDir;
+	}
+
+	public char getMovingDir() {
+		return movingDir;
+	}
+
+	public char getAnimDir() {
+		return animDir;
+	}
+
+	public boolean isFound1() {
+		return found1;
+	}
+
+	public boolean isFound2() {
+		return found2;
+	}
+
+	public int getInfoBox() {
+		return infoBox;
+	}
+
+	public int getPlayerCounter() {
+		return playerCounter;
+	}
+
+	public int getEnemyCounter() {
+		return enemyCounter;
+	}
+
 }

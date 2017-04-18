@@ -673,12 +673,7 @@ public class GameBoard {
 			if (grid[row][column] != null) {
 				switch (grid[row][column].getType()) {
 				case "Ammo":
-					for (MapObjects[] m : grid) {
-						for (MapObjects o : m) {
-							if (o != null && o.getType().equals("Player"))
-								((Player) o).setBullets(((Player) o).getBullets() + 1);
-						}
-					}
+					getPlayer().setBullets(getBullets() + 1);
 					break;
 				case "Locator":
 					for (MapObjects[] m : grid) {

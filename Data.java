@@ -17,14 +17,28 @@ public class Data implements Serializable {
 	private int[] locatorLoc = null;
 	private int[] briefcaseLoc = new int[2];
 	// GUI /////////////////////////////////
-	Frame frame = null;
+	private int playerCounter = 0;
+	private int enemyCounter = 0;
+	private boolean found1 = false;
+	private boolean found2 = false;
+	private int infoBox;
+	private char pendingDir;
+	private char movingDir;
+	private char animDir;
 	
 	
 	public Data(int level, int enemiesAlive, Frame frame) {
 		this.level = level;
 		enemiesLoc = new int[enemiesAlive*2];
 		enemyDirection = new char[enemiesAlive];
-		this.frame = frame;
+		this.playerCounter = frame.getPlayerCounter();
+		this.enemyCounter = frame.getEnemyCounter();
+		this.found1 = frame.isFound1();
+		this.found2 = frame.isFound2();
+		this.infoBox = frame.getInfoBox();
+		this.pendingDir = frame.getPendingDir();
+		this.movingDir = frame.getMovingDir();
+		this.animDir = frame.getAnimDir();
 	}
 
 	public void setPlayerLoc(int row, int column) {
@@ -126,5 +140,45 @@ public class Data implements Serializable {
 
 	public int[] getBriefcaseLoc() {
 		return briefcaseLoc;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public char[] getEnemyDirection() {
+		return enemyDirection;
+	}
+
+	public int getPlayerCounter() {
+		return playerCounter;
+	}
+
+	public int getEnemyCounter() {
+		return enemyCounter;
+	}
+
+	public boolean isFound1() {
+		return found1;
+	}
+
+	public boolean isFound2() {
+		return found2;
+	}
+
+	public int getInfoBox() {
+		return infoBox;
+	}
+
+	public char getPendingDir() {
+		return pendingDir;
+	}
+
+	public char getMovingDir() {
+		return movingDir;
+	}
+
+	public char getAnimDir() {
+		return animDir;
 	}	
 }
