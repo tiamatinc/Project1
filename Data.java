@@ -16,11 +16,15 @@ public class Data implements Serializable {
 	private int[] shieldLoc = null;
 	private int[] locatorLoc = null;
 	private int[] briefcaseLoc = new int[2];
+	// GUI /////////////////////////////////
+	Frame frame = null;
 	
-	public Data(int level, int enemiesAlive) {
+	
+	public Data(int level, int enemiesAlive, Frame frame) {
 		this.level = level;
 		enemiesLoc = new int[enemiesAlive*2];
 		enemyDirection = new char[enemiesAlive];
+		this.frame = frame;
 	}
 
 	public void setPlayerLoc(int row, int column) {

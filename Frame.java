@@ -12,9 +12,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class Frame extends JPanel implements ActionListener, KeyListener {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1177336518284090270L;
 	//// Utilities /////////////////////////////
 	private Scanner kb = new Scanner(System.in);
@@ -23,11 +20,16 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 
 	//// Others ////////////////////////////////
 	private boolean pause = false;
-	private char pendingDir = ' ';
+	private char pendingDir = 's';
 	private char movingDir = ' ';
+	private char animDir = 'u';
 	private Bullet bullet = null;
 	private BufferedImage gui = null;
-	
+	private BufferedImage iconUI = null;
+	private boolean found1 = false;
+	private boolean found2 = false;
+	private int infoBox = -1;
+
 	//// Counters //////////////////////////////
 	private int playerCounter = 0;
 	private int enemyCounter = 64;
@@ -41,25 +43,7 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
-	public void paintMap(Graphics g) {
-		g.drawImage(gui, 0, 0, null);
-		/**
-		g.setColor(Color.GREEN);
-		g.fillRect(20, 20, 576, 576);
-		g.setColor(Color.YELLOW);
-		g.fillRect(84, 84, 64, 64);
-		g.fillRect(276, 84, 64, 64);
-		g.fillRect(468, 84, 64, 64);
-		g.fillRect(84, 276, 64, 64);
-		g.fillRect(276, 276, 64, 64);
-		g.fillRect(468, 276, 64, 64);
-		g.fillRect(84, 468, 64, 64);
-		g.fillRect(276, 468, 64, 64);
-		g.fillRect(468, 468, 64, 64);
-		*/
-	}
-
-	public void paintObjects(Graphics g) {
+	private void paintObjects(Graphics g) {
 		BufferedImage sprite = null;
 		for (int y = 0; y < 9; y++) {
 			for (int x = 0; x < 9; x++) {
@@ -69,15 +53,15 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 					g.setColor(Color.BLACK);
 					String file = "res/dragon_";
 					int frame;
-					if (movingDir == 'u')
+					if (ge.getPlayer().getDirection() == 'u')
 						yPos -= playerCounter;
-					if (movingDir == 'd')
+					if (ge.getPlayer().getDirection() == 'd')
 						yPos += playerCounter;
-					if (movingDir == 'l')
+					if (ge.getPlayer().getDirection() == 'l')
 						xPos -= playerCounter;
-					if (movingDir == 'r')
+					if (ge.getPlayer().getDirection() == 'r')
 						xPos += playerCounter;
-					file += (ge.getPlayer().getDirection() + "_");
+					file += (animDir + "_");
 					frame = (playerCounter / 32) % 2;
 					try {
 						sprite = ImageIO.read(new File(file + frame + ".png"));
@@ -122,7 +106,8 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 					g.setColor(Color.BLUE);
 					g.fillRect(xPos, yPos, 64, 64);
 				}
-				// Sprite for Briefcase ///////////////////////////////////////////////////////////////////////////////
+				// Sprite for Briefcase
+				// ///////////////////////////////////////////////////////////////////////////////
 				if (ge.getType(y, x) == 'A')
 					try {
 						String file = "res/Gem";
@@ -154,7 +139,7 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
-	public void paintBullet(Graphics g) {
+	private void paintBullet(Graphics g) {
 		if (bullet != null) {
 			boolean hit = false;
 			// g.setColor(Color.RED);
@@ -162,13 +147,13 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			int y = bullet.getY();
 			if (bullet.getDir() == 's')
 				hit = true;
-			if (x / 16 == 1 && bullet.getDir() == 'l')
+			if (x / 16 < 1 && bullet.getDir() == 'l')
 				hit = true;
-			if (x / 16 == 33 && bullet.getDir() == 'r')
+			if (x / 16 >= 33 && bullet.getDir() == 'r')
 				hit = true;
-			if (y / 16 == 1 && bullet.getDir() == 'u')
+			if (y / 16 < 3 && bullet.getDir() == 'u')
 				hit = true;
-			if (y / 16 == 33 && bullet.getDir() == 'd')
+			if (y / 16 >= 34 && bullet.getDir() == 'd')
 				hit = true;
 			try {
 				BufferedImage sprite = ImageIO.read(new File("res/Fireball1.png"));
@@ -177,14 +162,17 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			}
 			// Things to do:
 			// Collisions for Rooms
-			if ((x - 20) / 64 == 1 || (x - 20) / 64 == 4 || (x - 20) / 64 == 7) {
-				if ((y - 20) / 64 == 1 || (y - 20) / 64 == 4 || (y - 20) / 64 == 7) {
+			if ((x - 9) / 64 == 1 || (x - 9) / 64 == 4 || (x - 9) / 64 == 7) {
+				if ((y - 49) / 64 == 1 || (y - 49) / 64 == 4 || (y - 49) / 64 == 7) {
 					hit = true;
 				}
 			}
 
 			// Collisions for Enemies
-
+			if (!hit) {
+				if (ge.getType((y - 49) / 64, (x - 9) / 64) == 'E')
+					hit = true;
+			}
 			if (hit) {
 				ge.shoot(bullet.getDir());
 				bullet = null;
@@ -226,17 +214,62 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
+	private void paintUI(Graphics g) {
+		// Status
+		g.setFont(new Font("Eras ITC", Font.BOLD, 28));
+		g.drawString("Level: " + ge.getLevel(), 700, 60);
+		g.drawString("Lives: " + ge.getLives(), 700, 90);
+		g.drawString("Fireballs: " + ge.getBullets(), 700, 120);
+		g.drawString("Enemies: " + ge.getEnemies(), 700, 150);
+		g.setFont(new Font("Eras ITC", Font.BOLD, 18));
+		// Found Icons
+		if (!ge.scanFor("Ammo")) {
+			try {
+				iconUI = ImageIO.read(new File("res/Gem0.png"));
+				g.drawImage(iconUI, 650, 460, null);
+				if (!found1) {
+					found1 = true;
+					ge.getPlayer().setBullets(ge.getBullets() - 1);
+				}
+			} catch (IOException e) {
+			}
+		}
+
+		if (!ge.scanFor("Locator")) {
+			try {
+				iconUI = ImageIO.read(new File("res/Scroll0.png"));
+				g.drawImage(iconUI, 780, 460, null);
+			} catch (IOException e) {
+			}
+		}
+
+		if (!ge.scanFor("Shield")) {
+			try {
+				iconUI = ImageIO.read(new File("res/heart1.png"));
+				g.drawImage(iconUI, 910, 460, null);
+				if (!found2) {
+					ge.getPlayer().setLives(ge.getLives() + 1);
+					found2 = true;
+				}
+			} catch (IOException e) {
+			}
+		}
+		// Info box
+		g.drawString(getInfo(infoBox), 760, 615);
+	}
+
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		paintMap(g);
+		g.drawImage(gui, 0, 0, null);
 		paintBullet(g);
 		paintObjects(g);
+		paintUI(g);
 
 		tm.start();
 	}
 
-	public void reset() {
+	private void reset() {
 		pendingDir = ' ';
 		movingDir = ' ';
 		playerCounter = 0;
@@ -249,6 +282,7 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			if (playerCounter == 0) {
 				if (ge.checkMove(pendingDir) != 's') {
 					movingDir = pendingDir;
+					animDir = pendingDir;
 				} else {
 					movingDir = 's';
 				}
@@ -268,18 +302,16 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			}
 			if (playerCounter == 0) {
 				ge.movePlayer(movingDir);
-				// printBoard();
 				if (nextLevel())
 					return;
 			}
 
 			repaint();
+			printBoard();
 			// kb.nextLine();
 			enemyCounter--;
+			// System.out.println(animDir);
 			// System.out.println("Counter: " + (playerCounter / 32) % 2);
-			///////////////////////////////////////////// TEST
-			///////////////////////////////////////////// COUNTER
-			///////////////////////////////////////////// PRINT
 			// System.out.println("Direct : " + ge.getPlayer().getDirection());
 
 			if (ge.checkWin())
@@ -306,12 +338,10 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		System.out.println("===========================");
 	}
 
-	public boolean nextLevel() {
+	private boolean nextLevel() {
 		if (ge.checkWin()) {
-			System.out.println("You have found the exit!");
-			System.out.println("[Press ENTER to continue]");
-			kb.nextLine();
-
+			repaint();
+			pause = true;
 			int lives = ge.getLives();
 			ge.levelReset();
 			ge.increaseLevel();
@@ -322,17 +352,45 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			return false;
 	}
 
-	public boolean gameOver() {
+	private boolean gameOver() {
 		if (ge.getLives() == 0) {
-			System.out.println("You have lost.");
-			System.out.println("[Press ENTER to try again]");
-			kb.nextLine();
+			infoBox = 2;
+			repaint();
+			pause = true;
 			ge.gameReset();
 			ge.generateBoard();
 			reset();
 			return true;
 		} else
 			return false;
+	}
+
+	private String getInfo(int code) {
+		String info = null;
+		switch (code) {
+		case 0:
+			info = "You found the exit! [Press ENTER]"; // Completed Level
+			break;
+		case 1:
+			info = "The knights found you!"; // Life is Lost
+			break;
+		case 2:
+			info = "You have been slain... [Press ENTER]";// Game Over
+			break;
+		case 3:
+			info = "[GAME PAUSED]"; // Game Paused
+			break;
+		case 4:
+			info = "Game has been saved.";
+			break;
+		case 5:
+			info = "Game save cancelled.";
+			break;
+		default:
+			info = "";
+			break;
+		}
+		return info;
 	}
 
 	public void keyTyped(KeyEvent e) {
@@ -350,26 +408,50 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			pendingDir = 'r';
 			break;
 		case 'p':
-			if (pause)
+			if (pause) {
 				pause = false;
-			else
+				infoBox = -1;
+			} else {
 				pause = true;
+				infoBox = 3;
+			}
+			repaint();
 			break;
 		case ' ':
-			if (bullet == null) {
-				Player player = ge.getPlayer();
-				int x = 64 * player.getColumn() + 20;
-				int y = 64 * player.getRow() + 20;
-				char dir = player.getDirection();
-				if (dir == 'u')
-					y -= playerCounter;
-				if (dir == 'd')
-					y += playerCounter;
-				if (dir == 'l')
-					x -= playerCounter;
-				if (dir == 'r')
-					x += playerCounter;
-				bullet = new Bullet(x, y, dir);
+			if (ge.getBullets() > 0) {
+				if (bullet == null) {
+					Player player = ge.getPlayer();
+					int x = 64 * player.getColumn() + 9;
+					int y = 64 * player.getRow() + 49;
+					char dir = player.getDirection();
+					if (dir == 'u')
+						y -= playerCounter;
+					if (dir == 'd')
+						y += playerCounter;
+					if (dir == 'l')
+						x -= playerCounter;
+					if (dir == 'r')
+						x += playerCounter;
+					bullet = new Bullet(x, y, dir);
+					ge.getPlayer().setBullets(ge.getBullets() - 1);
+				}
+			}
+			break;
+		case '\n':
+			pause = false;
+			infoBox = -1;
+			break;
+		case ';':
+			if (pause) {
+				JFileChooser pickSave = new JFileChooser();
+				int status = pickSave.showSaveDialog(null);
+				if (status == JFileChooser.APPROVE_OPTION) {
+					String result = ge.saveFile(pickSave.getSelectedFile(), this);
+					infoBox = 4;
+				}
+				if (status == JFileChooser.CANCEL_OPTION) {
+					infoBox = 5;
+				}
 			}
 			break;
 		}

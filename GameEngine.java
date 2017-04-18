@@ -220,8 +220,8 @@ public class GameEngine {
 	 * This method is in charge of writing the game's current status into a .dat
 	 * file with a name specified by the user.
 	 */
-	public String saveFile(File file) {
-		Data saveData = new Data(level, enemiesAlive);
+	public String saveFile(File file, Frame frame) {
+		Data saveData = new Data(level, enemiesAlive, frame);
 		saveData = grid.saveBoard(saveData);
 	
 		try {
