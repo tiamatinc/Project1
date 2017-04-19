@@ -15,7 +15,7 @@ public abstract class MapObjects {
 
 	public MapObjects(String type) {
 		this.type = type;
-		visible = false; // REMEMBER TO CHANGE BACK TO FALSE
+		visible = true; // REMEMBER TO CHANGE BACK TO FALSE
 	}
 
 	public boolean isVisible() {

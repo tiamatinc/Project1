@@ -164,7 +164,7 @@ public class GameEngine {
 	 * on their difficulty and scenario [IE. random movement vs. chasing the
 	 * user (for hard mode)].
 	 */
-	public void moveEnemies() {
+	public boolean moveEnemies() {
 		Player player = grid.getPlayer();
 		grid.moveEnemies(hardMode);
 		
@@ -175,7 +175,9 @@ public class GameEngine {
 		if(debugMode || godMode)
 			grid.debugVisibility();
 		
+		boolean alive = grid.scanFor("Player");
 		checkDeath(player);
+		return alive;
 	}
 	
 	/**
@@ -326,7 +328,6 @@ public class GameEngine {
 	 */
 	public void checkDeath(Player player) {
 		boolean alive = grid.scanFor("Player");
-		//System.out.println(alive);
 		if (!alive) {
 			grid.moveEnemyFromSpawn();
 			player.setLives(player.getLives() - 1);

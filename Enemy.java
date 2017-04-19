@@ -20,7 +20,7 @@ public class Enemy extends MapObjects {
 		this.column = column;
 		alive = true;
 		hasMoved = false;
-		direction = 'd';
+		direction = 's'; // Stationary
 	}
 	
 	public Enemy(int row, int column, char direction) {

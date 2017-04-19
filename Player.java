@@ -24,7 +24,7 @@ public class Player extends MapObjects {
 		bullets = 1;
 		invincible = 0;
 		visible = true;
-		direction = 'u';
+		direction = 'u'; // Stationary
 	}
 	
 	public Player(int row, int column, int lives, int bullets, int invincible, char direction) {

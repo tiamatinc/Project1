@@ -180,6 +180,7 @@ public class GameBoard {
 		saveData.setLives(p.getLives());
 		saveData.setBullets(p.getBullets());
 		saveData.setInvincible(p.isInvincible());
+		saveData.setPlayerDirection(p.getDirection());
 
 		for (int i = 0; i < BOARD_SIZE; ++i) {
 			for (int j = 0; j < BOARD_SIZE; ++j) {
@@ -672,22 +673,11 @@ public class GameBoard {
 		try {
 			if (grid[row][column] != null) {
 				switch (grid[row][column].getType()) {
-				case "Ammo":
-					getPlayer().setBullets(getBullets() + 1);
-					break;
 				case "Locator":
 					for (MapObjects[] m : grid) {
 						for (MapObjects o : m) {
 							if (o != null && o.getType().equals("Room") && ((Room) o).hasBriefcase())
 								((Room) o).setLocated(true);
-						}
-					}
-					break;
-				case "Shield":
-					for (MapObjects[] m : grid) {
-						for (MapObjects o : m) {
-							if (o != null && o.getType().equals("Player"))
-								((Player) o).setInvincible(7);
 						}
 					}
 					break;

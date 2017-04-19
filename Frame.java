@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Random;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -16,7 +15,6 @@ import javax.swing.*;
 public class Frame extends JPanel implements ActionListener, KeyListener {
 	private static final long serialVersionUID = -1177336518284090270L;
 	//// Utilities /////////////////////////////
-	private Scanner kb = new Scanner(System.in);
 	private GameEngine ge = new GameEngine();
 	private Timer tm = new Timer(15, this);
 
@@ -36,6 +34,10 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 	private int playerCounter = 0;
 	private int enemyCounter = 64;
 
+	/**
+	 * Constructor for the Frame class - Frame extends the JFrame class and implements
+	 * an ActionListener. The Frame is what is control of the GUI portion of the game.
+	 */
 	public Frame() {
 		addKeyListener(this);
 		setFocusable(true);
@@ -45,6 +47,12 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
+	//// Painting Methods //////////////////////
+	
+	/**
+	 * @param g
+	 * This method paints the objects on the GameBoard.
+	 */
 	private void paintObjects(Graphics g) {
 		BufferedImage sprite = null;
 		for (int y = 0; y < 9; y++) {
@@ -105,11 +113,14 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 					}
 				}
 				if (ge.getType(y, x) == 'B') {
-					g.setColor(Color.BLUE);
-					g.fillRect(xPos, yPos, 64, 64);
+					try {
+						String file = "res/exit.png";
+						if ((playerCounter / 32) % 2 == 1) {
+							sprite = ImageIO.read(new File(file));
+						}
+					} catch (IOException e) { 
+					}
 				}
-				// Sprite for Briefcase
-				// ///////////////////////////////////////////////////////////////////////////////
 				if (ge.getType(y, x) == 'A')
 					try {
 						String file = "res/Gem";
@@ -141,10 +152,14 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
+	/**
+	 * @param g
+	 * If a bullet is being fired [and thus the variable bullet is not null],
+	 * then this method will print the bullet [or in this case, fireball].
+	 */
 	private void paintBullet(Graphics g) {
 		if (bullet != null) {
 			boolean hit = false;
-			// g.setColor(Color.RED);
 			int x = bullet.getX();
 			int y = bullet.getY();
 			if (bullet.getDir() == 's')
@@ -182,6 +197,10 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
+	/**
+	 * Private class used to keep track of the fireballs x and y position
+	 * on the gui.
+	 */
 	private class Bullet {
 		int x, y;
 		int velX = 0, velY = 0;
@@ -216,6 +235,11 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
+	/**
+	 * @param g
+	 * Method in charge of printing the UI portion of the Frame that indicates
+	 * the status of the player, level, ammo count, and enemy count.
+	 */
 	private void paintUI(Graphics g) {
 		// Status
 		g.setFont(new Font("Eras ITC", Font.BOLD, 28));
@@ -231,7 +255,7 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 				g.drawImage(iconUI, 650, 460, null);
 				if (!found1) {
 					found1 = true;
-					ge.getPlayer().setBullets(ge.getBullets() - 1);
+					ge.getPlayer().setBullets(ge.getBullets() + 1);
 				}
 			} catch (IOException e) {
 			}
@@ -257,7 +281,7 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			}
 		}
 		// Info box
-		g.drawString(getInfo(infoBox), 760, 615);
+		g.drawString(getInfo(infoBox), 645, 638);
 	}
 
 	public void paintComponent(Graphics g) {
@@ -271,11 +295,19 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		tm.start();
 	}
 
+	//// Game Functions /////////////////////////////////
+	
+	/**
+	 * Resets all variables; used the board needs to be regenerated for
+	 * game over or next level.
+	 */
 	private void reset() {
 		pendingDir = ' ';
 		movingDir = ' ';
 		playerCounter = 0;
 		enemyCounter = 64;
+		found1 = false;
+		found2 = false;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -298,7 +330,11 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			if (enemyCounter == 0)
 				enemyCounter = 64;
 			if (enemyCounter == 64) {
-				ge.moveEnemies();
+				if(!ge.moveEnemies()) {
+					infoBox = 1;
+					pause = true;
+				}
+				else infoBox = -1;
 				if (gameOver())
 					return;
 			}
@@ -316,9 +352,12 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
+	/**
+	 * Method to regenerate the board if the exit has been found.
+	 */
 	private boolean nextLevel() {
 		if (ge.checkWin()) {
-			infoBox = 1;
+			infoBox = 0;
 			repaint();
 			pause = true;
 			int lives = ge.getLives();
@@ -331,6 +370,9 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			return false;
 	}
 
+	/**
+	 * Method to regenerate the board if all lives have been lost.
+	 */
 	private boolean gameOver() {
 		if (ge.getLives() == 0) {
 			infoBox = 2;
@@ -344,6 +386,12 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			return false;
 	}
 
+	/**
+	 * @param code
+	 * @return
+	 * Method returns the appropriate message based on whatever int is
+	 * passed upon call.
+	 */
 	private String getInfo(int code) {
 		String info = null;
 		switch (code) {
@@ -351,7 +399,7 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			info = "You found the exit! [Press ENTER]"; // Completed Level
 			break;
 		case 1:
-			info = "The knights found you!"; // Life is Lost
+			info = "The knights found you! [Press ENTER]"; // Life is Lost
 			break;
 		case 2:
 			info = "You have been slain... [Press ENTER]";// Game Over
@@ -366,16 +414,16 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 			info = "Game save cancelled.";
 			break;
 		case 6:
-			// Error saving
+			info = "There was an error saving.. Try again.";
 			break;
 		case 7:
-			// File loaded
+			info = "File has been loaded.";
 			break;
 		case 8:
-			// Invalid file
+			info = "Cannot load invalid file!";
 			break;
 		case 9:
-			// Incorrect file load
+			info = "There was an error loading.. Try again.";
 			break;
 		default:
 			info = "";
@@ -480,11 +528,15 @@ public class Frame extends JPanel implements ActionListener, KeyListener {
 		}
 	}
 
+	//// Empty Methods ////////////////////////////////////////////
+	
 	public void keyPressed(KeyEvent e) {
 	}
 
 	public void keyReleased(KeyEvent e) {
 	}
+	
+	//// Getters //////////////////////////////////////////////////
 	
 	public char getPendingDir() {
 		return pendingDir;
