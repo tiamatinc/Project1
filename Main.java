@@ -8,7 +8,7 @@ public class Main {
 	{
 		Frame panel = new Frame();
 		JFrame jf = new JFrame();
-		jf.setTitle("Testing");
+		jf.setTitle("Dragon vs. Knights");
 		jf.setSize(1000, 676);
 		jf.setResizable(false);
 		jf.setVisible(true);
